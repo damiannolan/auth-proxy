@@ -1,9 +1,19 @@
 package auth
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/damiannolan/auth-proxy/tenant"
+)
 
 func (mx *Mux) authorize(w http.ResponseWriter, req *http.Request) {
+	tenantID, ok := tenant.FromContext(req.Context())
+	if !ok {
+		// redirect
+	}
 
+	provider := mx.providers[tenantID]
+	http.Redirect(w, req, provider.cfg.AuthCodeURL(req.URL.Query().Get("state")), http.StatusTemporaryRedirect)
 }
 
 func (mx *Mux) callback(w http.ResponseWriter, req *http.Request) {
