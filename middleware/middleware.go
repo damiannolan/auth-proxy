@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"encoding/base64"
+	"fmt"
 	"net/http"
 
 	"github.com/damiannolan/auth-proxy/tenant"
@@ -16,7 +18,9 @@ func TenantDiscoveryMiddleware() func(next http.Handler) http.Handler {
 			cookie, err := r.Cookie("tenantId")
 			if err != nil {
 				log.WithError(err).Trace("redirecting for tenant identification")
-				redirectURL := viper.GetString("services.tenancy-service.redirect.url")
+
+				state := base64.StdEncoding.EncodeToString([]byte(r.URL.RequestURI()))
+				redirectURL := fmt.Sprintf("%s?state=%s", viper.GetString("services.tenancy-service.redirect-url"), state)
 				http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 			}
 
