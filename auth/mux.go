@@ -41,7 +41,7 @@ func (mx *Mux) Path() string {
 // RegisterProvider attempts to create a new OAuth2 Provider
 func (mx *Mux) RegisterProvider(tenantID string) {
 	authSvc := viper.GetString("services.auth-service.host") + viper.GetString("services.auth-service.port")
-	discoveryURL := authSvc + viper.GetString("services.auth-service.discovery-url")
+	discoveryURL := authSvc + viper.GetString("services.auth-service.discovery-url") + tenantID
 	provider, err := oidc.NewProvider(context.Background(), discoveryURL)
 	if err != nil {
 		// handle err
