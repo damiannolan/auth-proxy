@@ -1,0 +1,14 @@
+oauth:
+    client-id: sample-auth-client-id
+    client-secret: some-uuid-secret
+    redirect-url: /oauth/callback
+    scopes:
+        - profile
+        - email
+services:
+    auth-service:
+        host: keycloak.example.com
+        port: 8080
+        discovery-url: /auth/realms/
+    tenancy-service:
+        redirect-url: /tenant/identification
