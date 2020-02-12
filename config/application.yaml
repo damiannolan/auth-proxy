@@ -5,6 +5,9 @@ oauth:
     scopes:
         - profile
         - email
+proxy:
+    host: auth-proxy
+    port: 8079
 services:
     auth-service:
         host: keycloak.example.com
