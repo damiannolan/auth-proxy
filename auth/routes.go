@@ -3,22 +3,22 @@ package auth
 import (
 	"net/http"
 
-	"github.com/damiannolan/auth-proxy/tenant"
+	"github.com/damiannolan/auth-proxy/realm"
 )
 
 func (mx *Mux) authorize(w http.ResponseWriter, req *http.Request) {
-	tenantID, ok := tenant.FromContext(req.Context())
+	realmID, ok := realm.FromContext(req.Context())
 	if !ok {
 		// redirect
 	}
 
-	provider := mx.providers[tenantID]
+	provider := mx.providers[realmID]
 	http.Redirect(w, req, provider.cfg.AuthCodeURL(req.URL.Query().Get("state")), http.StatusTemporaryRedirect)
 }
 
 func (mx *Mux) callback(w http.ResponseWriter, req *http.Request) {
-	tenantID, _ := tenant.FromContext(req.Context())
-	provider := mx.providers[tenantID]
+	realmID, _ := realm.FromContext(req.Context())
+	provider := mx.providers[realmID]
 	code := req.URL.Query().Get("code")
 
 	token, err := provider.cfg.Exchange(req.Context(), code)
