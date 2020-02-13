@@ -17,7 +17,7 @@ func main() {
 		panic(err)
 	}
 
-	log.WithFields(log.Fields{"port": viper.GetString("proxy.port"), "server": viper.GetString("proxy.host")}).Info("starting application server")
+	log.WithFields(log.Fields{"port": viper.GetString("services.auth-proxy.port"), "server": viper.GetString("services.auth-proxy.host")}).Info("starting application server")
 
 	authMux := auth.NewMux("/oauth")
 	http.ListenAndServe(":"+viper.GetString("proxy.port"), authMux.Handler())
