@@ -1,6 +1,12 @@
 APP = auth-proxy
 USER := $(shell whoami)
 
+deploy:
+	docker-compose up
+
+destroy:
+	docker-compose down
+
 install:
 	go get ./...
 
@@ -14,6 +20,8 @@ verify:
 	go mod verify
 
 .PHONY: \
+	deploy \
+	destroy \
 	install \
 	test \
 	tidy \
