@@ -16,7 +16,7 @@ func DiscoveryMiddleware() func(next http.Handler) http.Handler {
 			cookie, err := r.Cookie("realmId")
 			if err != nil {
 				state := base64.StdEncoding.EncodeToString([]byte(r.URL.RequestURI()))
-				redirectURL := fmt.Sprintf("%s?state=%s", viper.GetString("services.tenancy-service.redirect-url"), state)
+				redirectURL := fmt.Sprintf("%s?state=%s", viper.GetString("services.realm-service.redirect-url"), state)
 				http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 			}
 
