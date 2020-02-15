@@ -1,3 +1,5 @@
+logger:
+    level: DEBUG
 oauth:
     client-id: sample-auth-client-id
     client-secret: some-uuid-secret
