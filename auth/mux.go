@@ -75,13 +75,15 @@ func (mx *Mux) RegisterProvider(tenantID string) {
 func (mx *Mux) Handler() http.Handler {
 	handler := chi.NewMux()
 
-	handler.HandleFunc("/authorize", mx.authorize)
-	handler.Get("/callback", mx.callback)
-	handler.Get("/expired", mx.expired)
-	handler.Get("/health", mx.health)
-	handler.Post("/login", mx.login)
-	handler.Get("/logout", mx.logout)
-	handler.Get("/token", mx.token)
+	handler.Route(mx.Path(), func(r chi.Router) {
+		r.HandleFunc("/authorize", mx.authorize)
+		r.Get("/callback", mx.callback)
+		r.Get("/expired", mx.expired)
+		r.Get("/health", mx.health)
+		r.Post("/login", mx.login)
+		r.Get("/logout", mx.logout)
+		r.Get("/token", mx.token)
+	})
 
 	return handler
 }
