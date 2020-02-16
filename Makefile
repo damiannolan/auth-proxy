@@ -1,6 +1,6 @@
 VERSION := 0.1.0
 
-DOCKER_REG = damiannolan
+DOCKER_REG = docker.pkg.github.com/damiannolan/auth-proxy
 DOCKER_IMAGE = auth-proxy
 DOCKER_IMAGE_TAG = $(VERSION)
 USER := $(shell whoami)
