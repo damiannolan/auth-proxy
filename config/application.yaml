@@ -2,8 +2,8 @@ logger:
     level: DEBUG
 oauth:
     client-id: sample-auth-client-id
-    client-secret: some-uuid-secret
-    redirect-url: /oauth/callback
+    client-secret: 50032493-cda1-4237-8c69-d6470b9699a3
+    redirect-url: http://auth-proxy:8079/oauth/callback
     scopes:
         - profile
         - email
@@ -12,8 +12,8 @@ services:
         host: auth-proxy
         port: 8079
     auth-service:
-        host: keycloak.example.com
-        port: 8080
+        host: http://keycloak
+        port: :8080
         discovery-url: /auth/realms/
     realm-service:
         redirect-url: /realm/identification
