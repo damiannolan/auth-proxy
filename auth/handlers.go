@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,44 +9,36 @@ import (
 	"github.com/damiannolan/auth-proxy/openid"
 	"github.com/damiannolan/auth-proxy/realm"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
-func (mx *Mux) authorize(w http.ResponseWriter, req *http.Request) {
+func (svc *ProxyService) authorize(w http.ResponseWriter, req *http.Request) {
 	realmID, ok := realm.FromContext(req.Context())
 	if !ok {
 		redirectURL := "getRedirectURL()"
-		http.Redirect(w, req, "", http.StatusTemporaryRedirect)
+		http.Redirect(w, req, redirectURL, http.StatusTemporaryRedirect)
 	}
 
-	if provider, ok := mx.providers[realmID]; ok { // "default"
-		http.Redirect(w, req, provider.config.AuthCodeURL(req.URL.Query().Get("state")), http.StatusTemporaryRedirect)
+	if p, ok := svc.providers[realmID]; ok { // "default"
+		http.Redirect(w, req, p.Config.AuthCodeURL(req.URL.Query().Get("state")), http.StatusTemporaryRedirect)
 	} else {
-		// TODO: Decide best approach
 		discoveryURL := openid.BuildDiscoveryURL(realmID)
-		var buf bytes.Buffer
-		buf.WriteString(viper.GetString("services.auth-service.host"))
-		buf.WriteString(":")
-		buf.WriteString(viper.GetString("services.auth-service.port"))
-		buf.WriteString(viper.GetString("services.auth-service.discovery-url"))
-		buf.WriteString(realmID)
+		authProvider := openid.NewAuthenticationProvider(discoveryURL)
+		svc.providers[realmID] = authProvider
 
-		provider := openid.NewProvider(discoveryURL)
-		mx.providers[realmID] = provider
-		http.Redirect(w, req, provider.config.AuthCodeURL(req.URL.Query().Get("state")), http.StatusTemporaryRedirect)
+		http.Redirect(w, req, p.Config.AuthCodeURL(req.URL.Query().Get("state")), http.StatusTemporaryRedirect)
 	}
 }
 
-func (mx *Mux) callback(w http.ResponseWriter, req *http.Request) {
+func (svc *ProxyService) callback(w http.ResponseWriter, req *http.Request) {
 	realmID, ok := realm.FromContext(req.Context())
 	if !ok {
 		http.Redirect(w, req, "", http.StatusTemporaryRedirect)
 	}
 
-	code := req.URL.Query().Get("code")
-	p := mx.providers[realmID]
+	authProvider := svc.providers[realmID]
 
-	token, err := p.config.Exchange(req.Context(), code)
+	code := req.URL.Query().Get("code")
+	token, err := authProvider.Exchange(req.Context(), code)
 	if err != nil {
 		http.Redirect(w, req, "", http.StatusForbidden)
 	}
@@ -59,7 +50,7 @@ func (mx *Mux) callback(w http.ResponseWriter, req *http.Request) {
 		http.Redirect(w, req, "", http.StatusForbidden)
 	}
 
-	idToken, err := p.verifier.Verify(req.Context(), rawIDToken)
+	idToken, err := authProvider.Verify(req.Context(), rawIDToken)
 	if err != nil {
 		http.Redirect(w, req, "", http.StatusForbidden)
 	}
@@ -68,6 +59,7 @@ func (mx *Mux) callback(w http.ResponseWriter, req *http.Request) {
 		Email    string `json:"email"`
 		Verified bool   `json:"email_verified"`
 	}
+
 	if err := idToken.Claims(&claims); err != nil {
 		http.Redirect(w, req, "", http.StatusInternalServerError)
 	}
@@ -75,11 +67,11 @@ func (mx *Mux) callback(w http.ResponseWriter, req *http.Request) {
 	log.WithField("claims", claims).Debug("access token claims")
 }
 
-func (mx *Mux) expired(w http.ResponseWriter, req *http.Request) {
-
+func (svc *ProxyService) expired(w http.ResponseWriter, req *http.Request) {
+	// TODO: Implement a function to check if token has expired
 }
 
-func (mx *Mux) health(w http.ResponseWriter, req *http.Request) {
+func (svc *ProxyService) health(w http.ResponseWriter, req *http.Request) {
 	payload := struct {
 		Message    string `json:"message"`
 		Status     string `json:"status"`
@@ -101,14 +93,14 @@ func (mx *Mux) health(w http.ResponseWriter, req *http.Request) {
 	w.Write(json)
 }
 
-func (mx *Mux) login(w http.ResponseWriter, req *http.Request) {
-
+func (svc *ProxyService) login(w http.ResponseWriter, req *http.Request) {
+	// TODO: Implement direct login handler
 }
 
-func (mx *Mux) logout(w http.ResponseWriter, req *http.Request) {
-
+func (svc *ProxyService) logout(w http.ResponseWriter, req *http.Request) {
+	// TODO: Implement logout and revoke token
 }
 
-func (mx *Mux) token(w http.ResponseWriter, req *http.Request) {
-
+func (svc *ProxyService) token(w http.ResponseWriter, req *http.Request) {
+	// TODO
 }

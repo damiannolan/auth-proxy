@@ -9,31 +9,46 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Provider is a simple struct which merges oauth2.Config and *oidc.Provider
-type Provider struct {
-	*oidc.Provider
-	config oauth2.Config
+// AuthenticationProvider leverages oauth2.Config and *oidc.Provider to perform  OAuth 2.0
+// and OpenID Connect protocol related functions
+type AuthenticationProvider struct {
+	Config   oauth2.Config
+	Provider *oidc.Provider
 }
 
-// NewProvider creates a new OAuth2 OpenID Connect Provider
-func NewProvider(discoveryURL string) *Provider {
-	p := new(Provider)
+// NewAuthenticationProvider creates a new OAuth2 OpenID Connect Provider
+func NewAuthenticationProvider(discoveryURL string) *AuthenticationProvider {
 	provider, err := oidc.NewProvider(context.Background(), discoveryURL)
 	if err != nil {
 		panic(err)
 	}
 
-	config := oauth2.Config{
+	cfg := oauth2.Config{
 		ClientID:     viper.GetString("oauth.client-id"),
 		ClientSecret: viper.GetString("oauth.client-secret"),
 		RedirectURL:  viper.GetString("oauth.redirect-url"),
-		Endpoint:     p.Endpoint(),
+		Endpoint:     provider.Endpoint(),
 		Scopes:       append(viper.GetStringSlice("oauth.scopes"), oidc.ScopeOfflineAccess, oidc.ScopeOpenID),
 	}
 
-	p.Provider = provider
-	p.config = config
-	return p
+	return &AuthenticationProvider{
+		Config:   cfg,
+		Provider: provider,
+	}
+}
+
+// Exchange -
+func (p *AuthenticationProvider) Exchange(ctx context.Context, code string) (*oauth2.Token, error) {
+	return p.Config.Exchange(ctx, code)
+}
+
+// Verify -
+func (p *AuthenticationProvider) Verify(ctx context.Context, rawIDToken string) (*oidc.IDToken, error) {
+	oidcCfg := &oidc.Config{
+		ClientID: viper.GetString("oauth.client-id"), // Make clientID a field on receiver
+	}
+
+	return p.Provider.Verifier(oidcCfg).Verify(ctx, rawIDToken)
 }
 
 // BuildDiscoveryURL helper function
