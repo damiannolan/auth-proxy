@@ -2,8 +2,14 @@ logger:
     level: DEBUG
 oauth:
     client-id: sample-auth-client-id
-    client-secret: 50032493-cda1-4237-8c69-d6470b9699a3
-    redirect-url: http://auth-proxy:8079/oauth/callback
+    client-secret: some-uuid-secret
+    redirect-url: /oauth/callback
+    resources:
+    - uri: /admin/*
+      methods:
+      - GET
+      roles:
+      - admin
     scopes:
         - profile
         - email
