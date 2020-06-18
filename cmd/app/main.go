@@ -1,14 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/damiannolan/auth-proxy/auth"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -22,12 +19,15 @@ func init() {
 
 func main() {
 	if err := readConfig(); err != nil {
-		panic(err)
+		log.WithError(err).Error("failed to read config")
 	}
 
-	authMux := auth.NewMux("/oauth")
+	srv, err := auth.NewProxyService()
+	if err != nil {
+		log.WithError(err).Error("failed to create proxy service")
+	}
 
-	host, port := viper.GetString("services.auth-proxy.host"), viper.GetInt("services.auth-proxy.port")
-	log.WithFields(log.Fields{"host": host, "port": port}).Info("starting application server")
-	http.ListenAndServe(fmt.Sprintf(":%d", port), authMux.Handler())
+	if err := srv.ListenAndServe(); err != nil {
+		log.WithError(err).Error("failed to serve")
+	}
 }

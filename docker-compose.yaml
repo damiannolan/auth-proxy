@@ -6,11 +6,13 @@ volumes:
 
 services:
   auth-proxy:
-    image: damiannolan/auth-proxy:0.1.0
+    image: docker.pkg.github.com/damiannolan/auth-proxy/auth-proxy:0.1.0
     volumes:
       - /Users/damiannolan/development/auth-proxy/config:/config
     ports:
       - 8079:8079
+    depends_on: 
+      - keycloak
   postgres:
     image: postgres
     volumes:

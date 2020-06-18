@@ -13,13 +13,17 @@ oauth:
     scopes:
         - profile
         - email
+    url: /oauth/
+server:
+    host: auth-proxy
+    port: :8079
 services:
-    auth-proxy:
-        host: auth-proxy
-        port: 8079
     auth-service:
-        host: keycloak.example.com
-        port: 8080
+        host: http://keycloak
+        port: :8080
         discovery-url: /auth/realms/
     realm-service:
         redirect-url: /realm/identification
+    upstream:
+        host: target-service
+        port: 8080
